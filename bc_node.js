@@ -2,21 +2,22 @@ const crypto = require('crypto')
 const http = require('http')
 
 const PARENT_NODE_URL = 'http://localhost:3005'
+
 const DIFFICULTY = 2 // number of zeros needed at start
+const MINING_REWARD = 0.1
+
 const THIS_ADDR = 'b'
 
 function BlockData() {
-  this.a = 100
-  this.b = 0
-  this.c = 0
-  this.d = 0
+  this._srcAddr = ''
+  this._destAddr = ''
+  this._amount = ''
 }
 
 BlockData.prototype.load = function(_data) {
-  this.a = _data.a
-  this.b = _data.b
-  this.c = _data.c
-  this.d = _data.d
+  this._srcAddr = _data._srcAddr
+  this._destAddr = _data._destAddr
+  this._amount = _data._amount
 }
 
 function Block() {
@@ -91,50 +92,68 @@ BlockChain.prototype.load = function(_blockchain) {
   }
 }
 
-BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount)
-{
+BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount) {
   if (this.blocks.length == 0) return false
   
-  const finalBlockData = this.blocks[this.blocks.length - 1].data
-  let b1 = Object.assign({}, finalBlockData)
+  if (this.getBalance(_srcAddr) < _amount) return false
 
-  if (b1[_srcAddr] < _amount) return false
-
-  b1[_srcAddr] -= _amount
-  b1[_destAddr] += _amount
+  let b1 = new BlockData()
+  b1._srcAddr = _srcAddr
+  b1._destAddr = _destAddr
+  b1._amount = _amount
 
   blockchain.mineBlock(b1)
   return true
 }
 
-let blockchain = new BlockChain();
+BlockChain.prototype.getBalance = function(_addr) {
+  let balance = 0
+  for (let i = 0; i < this.blocks.length; i++) {
+    if (this.blocks[i].minerAddr == _addr) balance += MINING_REWARD
+    if (this.blocks[i].data._srcAddr == _addr) balance -= this.blocks[i].data._amount
+    if (this.blocks[i].data._destAddr == _addr) balance += this.blocks[i].data._amount
+  }
+  return balance
+}
+
+let printBalances = (_blockchain, _addrList) => {
+  let output = 'Balances:\r\n'
+  for (let i = 0; i < _addrList.length; i++) {
+    output += `${_addrList[i]}: ${blockchain.getBalance(_addrList[i])}\r\n`
+  }
+  output += '\r\n'
+  console.log(output)
+} 
+
+let blockchain = new BlockChain()
 
 http.get(PARENT_NODE_URL, (resp) => {
   let data = ''
- 
+  
   resp.on('data', (chunk) => {
     data += chunk
   })
-
+  
   resp.on('end', () => {
     blockchain.load(JSON.parse(data))
-
+    
     if (blockchain.transaction('a', 'b', 10)) console.log('Transaction succeeded')
     else console.log('Transaction failed')
-
+    
     if (blockchain.transaction('a', 'c', 10)) console.log('Transaction succeeded')
     else console.log('Transaction failed')
-
+    
     if (blockchain.transaction('a', 'd', 10)) console.log('Transaction succeeded')
     else console.log('Transaction failed')
-
+    
     if (blockchain.transaction('d', 'a', 100)) console.log('Transaction succeeded')
     else console.log('Transaction failed')
-
+    
     if (blockchain.transaction('c', 'b', 30)) console.log('Transaction succeeded')
     else console.log('Transaction failed')
-
+    
     blockchain.print()
+    printBalances(blockchain, ['a', 'b', 'c', 'd'])
   })
 }).on("error", (err) => {
   console.log("Error: " + err.message)
