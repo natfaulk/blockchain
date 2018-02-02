@@ -7,7 +7,7 @@ const PORT = 3005
 
 const THIS_ADDR = 'a'
 
-const DIFFICULTY = 2 // number of zeros needed at start
+const DIFFICULTY = 5 // number of zeros needed at start
 const MINING_REWARD = 0.1
 
 function BlockData() {
@@ -53,6 +53,14 @@ BlockChain.prototype.addBlock = function(_data) {
   this.blocks.push(b)
 }
 
+let checkHashPrefix = (_hash, _nChars, _char) => {
+  let res = true
+  for (let i = 0; i < _nChars; i++) {
+    if (_hash[i] != _char) return false
+  }
+  return true
+}
+
 BlockChain.prototype.mineBlock = function(_data) {
   let b = new Block()
   if (this.blocks.length > 0)
@@ -61,7 +69,7 @@ BlockChain.prototype.mineBlock = function(_data) {
   b.minerAddr = THIS_ADDR
 
   b.genCurrHash()  
-  while (b.currHash[0] != 0 || b.currHash[1] != 0) {
+  while (!checkHashPrefix(b.currHash, DIFFICULTY, '0')) {
     b.nonce++
     b.genCurrHash()
   } 

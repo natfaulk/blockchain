@@ -4,7 +4,7 @@ const http = require('http')
 const PARENT_NODE_URL = 'http://localhost:3005'
 
 // TODO: Implement this properly
-// const DIFFICULTY = 2 // number of zeros needed at start
+const DIFFICULTY = 5 // number of zeros needed at start
 
 const MINING_REWARD = 0.1
 
@@ -52,6 +52,14 @@ BlockChain.prototype.addBlock = function(_data) {
   this.blocks.push(b)
 }
 
+let checkHashPrefix = (_hash, _nChars, _char) => {
+  let res = true
+  for (let i = 0; i < _nChars; i++) {
+    if (_hash[i] != _char) return false
+  }
+  return true
+}
+
 BlockChain.prototype.mineBlock = function(_data) {
   let b = new Block()
   if (this.blocks.length > 0)
@@ -60,7 +68,7 @@ BlockChain.prototype.mineBlock = function(_data) {
   b.minerAddr = THIS_ADDR
 
   b.genCurrHash()  
-  while (b.currHash[0] != 0 || b.currHash[1] != 0) {
+  while (!checkHashPrefix(b.currHash, DIFFICULTY, '0')) {
     b.nonce++
     b.genCurrHash()
   } 
@@ -124,7 +132,7 @@ BlockChain.prototype.verify = function() {
     this.blocks[i].genCurrHash()
     if (this.blocks[i].currHash != oldHash) return false
     if ((i > 0) && (this.blocks[i].prevHash != this.blocks[i - 1].currHash)) return false
-    if ((i > 0) && ((this.blocks[i].currHash[0] != '0') || (this.blocks[i].currHash[1] != '0'))) return false
+    if ((i > 0) && (!checkHashPrefix(this.blocks[i].currHash, DIFFICULTY, '0'))) return false
   }
   return true
 }
