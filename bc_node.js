@@ -3,7 +3,9 @@ const http = require('http')
 
 const PARENT_NODE_URL = 'http://localhost:3005'
 
-const DIFFICULTY = 2 // number of zeros needed at start
+// TODO: Implement this properly
+// const DIFFICULTY = 2 // number of zeros needed at start
+
 const MINING_REWARD = 0.1
 
 const THIS_ADDR = 'b'
@@ -116,6 +118,17 @@ BlockChain.prototype.getBalance = function(_addr) {
   return balance
 }
 
+BlockChain.prototype.verify = function() {
+  for (let i = 0; i < this.blocks.length; i++) {
+    let oldHash = this.blocks[i].currHash
+    this.blocks[i].genCurrHash()
+    if (this.blocks[i].currHash != oldHash) return false
+    if ((i > 0) && (this.blocks[i].prevHash != this.blocks[i - 1].currHash)) return false
+    if ((i > 0) && ((this.blocks[i].currHash[0] != '0') || (this.blocks[i].currHash[1] != '0'))) return false
+  }
+  return true
+}
+
 let printBalances = (_blockchain, _addrList) => {
   let output = 'Balances:\r\n'
   for (let i = 0; i < _addrList.length; i++) {
@@ -136,6 +149,10 @@ http.get(PARENT_NODE_URL, (resp) => {
   
   resp.on('end', () => {
     blockchain.load(JSON.parse(data))
+    if (!blockchain.verify()) {
+      console.log('received invalid blockchain')
+      return
+    } else console.log('Received valid blockchain')
     
     if (blockchain.transaction('a', 'b', 10)) console.log('Transaction succeeded')
     else console.log('Transaction failed')
