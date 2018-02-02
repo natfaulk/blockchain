@@ -3,7 +3,6 @@ const http = require('http')
 
 const PARENT_NODE_URL = 'http://localhost:3005'
 
-// TODO: Implement this properly
 const DIFFICULTY = 5 // number of zeros needed at start
 
 const MINING_REWARD = 0.1
