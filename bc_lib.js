@@ -130,7 +130,15 @@ BlockChain.prototype.verify = function() {
   return true
 }
 
+BlockChain.prototype.mineGenesisBlock = function(_destAddr, _amount) {
+  if (this.blocks.length != 0) return
+  let b = new BlockData()
+  b._srcAddr = '0'
+  b._destAddr = _destAddr
+  b._amount = 100
+  this.addBlock(b)
+}
+
 module.exports = {
-  BlockChain: BlockChain,
-  BlockData: BlockData
+  BlockChain: BlockChain
 };
