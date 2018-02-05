@@ -1,140 +1,11 @@
 const crypto = require('crypto')
 const http = require('http')
+const BlockChain = require('./bc_lib.js').BlockChain
+
+ let cfg = require('./bc_cfg.js')
+ cfg.THIS_ADDR = 'b'
 
 const PARENT_NODE_URL = 'http://localhost:3005'
-
-const DIFFICULTY = 5 // number of zeros needed at start
-
-const MINING_REWARD = 0.1
-
-const THIS_ADDR = 'b'
-
-function BlockData() {
-  this._srcAddr = ''
-  this._destAddr = ''
-  this._amount = ''
-}
-
-BlockData.prototype.load = function(_data) {
-  this._srcAddr = _data._srcAddr
-  this._destAddr = _data._destAddr
-  this._amount = _data._amount
-}
-
-function Block() {
-  this.data = {}
-  this.prevHash = ''
-  this.minerAddr = THIS_ADDR
-  this.nonce = 0
-  this.currHash = ''
-}
-
-Block.prototype.genCurrHash = function() {
-  let tempD = JSON.stringify(this.data)
-  tempD += this.prevHash
-  tempD += this.minerAddr
-  tempD += this.nonce.toString()
-  this.currHash = crypto.createHash('md5').update(tempD).digest('hex')
-}
-
-function BlockChain() {
-  this.blocks = []
-}
-
-BlockChain.prototype.addBlock = function(_data) {
-  let b = new Block()
-  if (this.blocks.length > 0)
-    b.prevHash = this.blocks[this.blocks.length - 1].currHash
-  b.data = _data
-  b.minerAddr = THIS_ADDR
-  b.genCurrHash()
-  this.blocks.push(b)
-}
-
-let checkHashPrefix = (_hash, _nChars, _char) => {
-  let res = true
-  for (let i = 0; i < _nChars; i++) {
-    if (_hash[i] != _char) return false
-  }
-  return true
-}
-
-BlockChain.prototype.mineBlock = function(_data) {
-  let b = new Block()
-  if (this.blocks.length > 0)
-    b.prevHash = this.blocks[this.blocks.length - 1].currHash
-  b.data = _data
-  b.minerAddr = THIS_ADDR
-
-  b.genCurrHash()  
-  while (!checkHashPrefix(b.currHash, DIFFICULTY, '0')) {
-    b.nonce++
-    b.genCurrHash()
-  } 
-  this.blocks.push(b)
-}
-
-BlockChain.prototype.print = function(_data) {
-  let outStr = ''
-  for (let i = 0; i < this.blocks.length; i++) {
-    outStr += `Block ${i}:\r\n`
-    outStr += `\tData: ${JSON.stringify(this.blocks[i].data)}\r\n`
-    outStr += `\tMiner Addr: ${this.blocks[i].minerAddr}\r\n`
-    outStr += `\tNonce: ${this.blocks[i].nonce}\r\n`
-    outStr += `\tPrevHash: ${this.blocks[i].prevHash}\r\n`
-    outStr += `\tCurrHash: ${this.blocks[i].currHash}\r\n\r\n`
-  }
-  console.log(outStr)
-}
-
-BlockChain.prototype.load = function(_blockchain) {
-  for (let i = 0; i < _blockchain.blocks.length; i++) {
-    let b = new Block()
-    b.nonce = _blockchain.blocks[i].nonce
-    b.currHash = _blockchain.blocks[i].currHash
-    b.prevHash = _blockchain.blocks[i].prevHash
-    b.minerAddr = _blockchain.blocks[i].minerAddr
-    let d = new BlockData()
-    d.load(_blockchain.blocks[i].data)
-    b.data = d
-    this.blocks.push(b)
-  }
-}
-
-BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount) {
-  if (this.blocks.length == 0) return false
-  
-  if (this.getBalance(_srcAddr) < _amount) return false
-
-  let b1 = new BlockData()
-  b1._srcAddr = _srcAddr
-  b1._destAddr = _destAddr
-  b1._amount = _amount
-
-  blockchain.mineBlock(b1)
-  return true
-}
-
-BlockChain.prototype.getBalance = function(_addr) {
-  let balance = 0
-  for (let i = 0; i < this.blocks.length; i++) {
-    if (this.blocks[i].minerAddr == _addr) balance += MINING_REWARD
-    if (this.blocks[i].data._srcAddr == _addr) balance -= this.blocks[i].data._amount
-    if (this.blocks[i].data._destAddr == _addr) balance += this.blocks[i].data._amount
-  }
-  return balance
-}
-
-BlockChain.prototype.verify = function() {
-  for (let i = 0; i < this.blocks.length; i++) {
-    let oldHash = this.blocks[i].currHash
-    this.blocks[i].genCurrHash()
-    if (this.blocks[i].currHash != oldHash) return false
-    if ((i > 0) && (this.blocks[i].prevHash != this.blocks[i - 1].currHash)) return false
-    if ((i > 0) && (!checkHashPrefix(this.blocks[i].currHash, DIFFICULTY, '0'))) return false
-  }
-  return true
-}
 
 let printBalances = (_blockchain, _addrList) => {
   let output = 'Balances:\r\n'
@@ -145,7 +16,7 @@ let printBalances = (_blockchain, _addrList) => {
   console.log(output)
 } 
 
-let blockchain = new BlockChain()
+let blockchain = new BlockChain(cfg)
 
 http.get(PARENT_NODE_URL, (resp) => {
   let data = ''
