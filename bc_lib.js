@@ -1,6 +1,6 @@
 const crypto = require('crypto')
-const http = require('http')
-
+const express = require('express')
+const path = require('path')
 
 function BlockData() {
   this._srcAddr = ''
@@ -138,6 +138,21 @@ BlockChain.prototype.mineGenesisBlock = function(_destAddr, _amount) {
   b._amount = 100
   this.addBlock(b)
 }
+
+BlockChain.prototype.beginServer = function()
+{
+  if (this.cfg.PORT == 0) return;
+
+  this.app = express()
+  
+  this.app.get('/', (req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.send(JSON.stringify(this))
+  })
+
+  this.app.listen(this.cfg.PORT, () => console.log(`Example app listening on port ${this.cfg.PORT}!`))
+}
+
 
 module.exports = {
   BlockChain: BlockChain
