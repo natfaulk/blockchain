@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const express = require('express')
 const path = require('path')
+const bodyParser = require('body-parser')
 
 function BlockData() {
   this._srcAddr = ''
@@ -30,9 +31,15 @@ Block.prototype.genCurrHash = function() {
   this.currHash = crypto.createHash('md5').update(tempD).digest('hex')
 }
 
+function RemoteNode(_port, _addr) {
+  this.port = _port
+  this.addr = _addr
+}
+
 function BlockChain(_cfg) {
   this.blocks = []
   this.cfg = _cfg
+  this.knownNodes = []
 }
 
 BlockChain.prototype.addBlock = function(_data) {
@@ -144,10 +151,26 @@ BlockChain.prototype.beginServer = function()
   if (this.cfg.PORT == 0) return;
 
   this.app = express()
-  
+  this.app.use(bodyParser.json());
+
   this.app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     res.send(JSON.stringify(this))
+  })
+
+  this.app.post('/registerNode', (req, res) => {
+    if (typeof req.body.addr == 'undefined' || typeof req.body.port == 'undefined') {
+      res.send('nack')      
+      return
+    }
+    let r = new RemoteNode(req.body.addr, req.body.port)
+    this.knownNodes.push(r)
+    res.send('ack')
+  })
+
+  this.app.get('/getNodes', (req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.send(JSON.stringify(this.knownNodes))
   })
 
   this.app.listen(this.cfg.PORT, () => console.log(`Example app listening on port ${this.cfg.PORT}!`))
