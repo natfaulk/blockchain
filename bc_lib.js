@@ -148,6 +148,15 @@ BlockChain.prototype.mineGenesisBlock = function(_destAddr, _amount) {
   this.addBlock(b)
 }
 
+BlockChain.prototype.printBalances = function(_addrList) {
+  let output = 'Balances:\r\n'
+  for (let i = 0; i < _addrList.length; i++) {
+    output += `${_addrList[i]}: ${this.getBalance(_addrList[i])}\r\n`
+  }
+  output += '\r\n'
+  console.log(output)
+} 
+
 BlockChain.prototype.beginServer = function()
 {
   if (this.cfg.PORT == 0) return;

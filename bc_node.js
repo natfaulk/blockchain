@@ -8,15 +8,6 @@ const BlockChain = require('./bc_lib.js').BlockChain
 // const PARENT_NODE_URL = 'http://node1.747474.xyz/'
 const PARENT_NODE_URL = 'http://localhost:3005'
 
-let printBalances = (_blockchain, _addrList) => {
-  let output = 'Balances:\r\n'
-  for (let i = 0; i < _addrList.length; i++) {
-    output += `${_addrList[i]}: ${blockchain.getBalance(_addrList[i])}\r\n`
-  }
-  output += '\r\n'
-  console.log(output)
-} 
-
 let blockchain = new BlockChain(cfg)
 
 http.get(PARENT_NODE_URL, (resp) => {
@@ -49,7 +40,7 @@ http.get(PARENT_NODE_URL, (resp) => {
     else console.log('Transaction failed')
     
     blockchain.print()
-    printBalances(blockchain, ['a', 'b', 'c', 'd'])
+    blockchain.printBalances(['a', 'b', 'c', 'd'])
 
     var body = JSON.stringify(blockchain)
     
