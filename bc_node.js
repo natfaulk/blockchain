@@ -5,6 +5,7 @@ const BlockChain = require('./bc_lib.js').BlockChain
  let cfg = require('./bc_cfg.js')
  cfg.THIS_ADDR = 'b'
 
+// const PARENT_NODE_URL = 'http://node1.747474.xyz/'
 const PARENT_NODE_URL = 'http://localhost:3005'
 
 let printBalances = (_blockchain, _addrList) => {
@@ -26,7 +27,7 @@ http.get(PARENT_NODE_URL, (resp) => {
   })
   
   resp.on('end', () => {
-    blockchain.load(JSON.parse(data))
+    blockchain.loadFromJSON(JSON.parse(data))
     if (!blockchain.verify()) {
       console.log('received invalid blockchain')
       return
@@ -49,6 +50,21 @@ http.get(PARENT_NODE_URL, (resp) => {
     
     blockchain.print()
     printBalances(blockchain, ['a', 'b', 'c', 'd'])
+
+    var body = JSON.stringify(blockchain)
+    
+    var request = new http.ClientRequest({
+        hostname: 'localhost',
+        port: 3005,
+        path: "/syncBlockChain",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(body)
+        }
+    })
+  
+    request.end(body)
   })
 }).on("error", (err) => {
   console.log("Error: " + err.message)

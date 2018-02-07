@@ -88,7 +88,9 @@ BlockChain.prototype.print = function(_data) {
   console.log(outStr)
 }
 
-BlockChain.prototype.load = function(_blockchain) {
+BlockChain.prototype.loadFromJSON = function(_blockchain) {
+  this.blocks = []
+
   for (let i = 0; i < _blockchain.blocks.length; i++) {
     let b = new Block()
     b.nonce = _blockchain.blocks[i].nonce
@@ -166,6 +168,26 @@ BlockChain.prototype.beginServer = function()
     let r = new RemoteNode(req.body.addr, req.body.port)
     this.knownNodes.push(r)
     res.send('ack')
+  })
+
+  this.app.post('/syncBlockChain', (req, res) => {
+    console.log(req.body)
+    let tempBlockchain = new BlockChain(this.cfg)
+    tempBlockchain.loadFromJSON(req.body)
+    if (tempBlockchain.blocks.length <= this.blocks.length) {
+      res.send('nack. length same or less')
+      return
+    }
+
+    if (!tempBlockchain.verify()) {
+      res.send('nack. invlaid blockchain')
+      return
+    }
+
+    this.blocks = tempBlockchain.blocks
+    res.send('ack')
+    console.log('updated with remote blockchain')
+    this.print()
   })
 
   this.app.get('/getNodes', (req, res) => {
