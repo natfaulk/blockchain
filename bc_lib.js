@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const express = require('express')
 const path = require('path')
 const bodyParser = require('body-parser')
+const http = require('http')
 
 function BlockData() {
   this._srcAddr = ''
@@ -102,6 +103,49 @@ BlockChain.prototype.loadFromJSON = function(_blockchain) {
     b.data = d
     this.blocks.push(b)
   }
+}
+
+BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
+  http.get(_addr, (resp) => {
+    let data = ''
+    
+    resp.on('data', (chunk) => {
+      data += chunk
+    })
+    
+    resp.on('end', () => {
+      let tempBlockchain = new BlockChain(this.cfg)
+      tempBlockchain.loadFromJSON(JSON.parse(data))
+      if (!tempBlockchain.verify()) {
+        console.log('received invalid blockchain')
+        _callback('failure')
+      } else {
+        this.blocks = tempBlockchain.blocks
+        console.log('Received valid blockchain')
+        _callback('success')
+      }
+    })
+  }).on("error", (err) => {
+    console.log("Error: " + err.message)
+    _callback('failure')    
+  })
+}
+
+BlockChain.prototype.sendToRemote = function(_hostname, _port) {
+  var body = JSON.stringify(this)
+    
+  var request = new http.ClientRequest({
+      hostname: _hostname,
+      port: _port,
+      path: "/syncBlockChain",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body)
+      }
+  })
+
+  request.end(body)
 }
 
 BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount) {
