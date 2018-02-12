@@ -3,9 +3,11 @@ const http = require('http')
 const BlockChain = require('./bc_lib.js').BlockChain
 
  let cfg = require('./bc_cfg.js')
- cfg.THIS_ADDR = 'b'
+ cfg.loadFromDisk('bc_cfg2.json')
 
-// const PARENT_NODE_URL = 'http://node1.747474.xyz/'
+console.log(`Address: ${cfg.THIS_ADDR}`)
+console.log(`Port: ${cfg.PORT}`)
+
 const PARENT_NODE_URL = 'http://localhost:3005'
 
 let blockchain = new BlockChain(cfg)

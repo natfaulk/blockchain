@@ -6,8 +6,7 @@ const BlockChain = require('./bc_lib.js').BlockChain
 
 
 let cfg = require('./bc_cfg.js')
-cfg.THIS_ADDR = 'a'
-cfg.PORT = 3005
+cfg.loadFromDisk()
 
 let blockchain = new BlockChain(cfg)
 
