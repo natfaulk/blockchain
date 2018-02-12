@@ -3,6 +3,7 @@ const express = require('express')
 const path = require('path')
 const bodyParser = require('body-parser')
 const http = require('http')
+const fs = require('fs');
 
 function BlockData() {
   this._srcAddr = ''
@@ -89,9 +90,18 @@ BlockChain.prototype.print = function(_data) {
   console.log(outStr)
 }
 
+BlockChain.prototype.saveToDisk = function() {
+  mkdir_p(path.join(__dirname, 'data'))
+  fs.writeFile(path.join(__dirname, 'data', 'sav.json'), JSON.stringify(this.blocks), 'utf8', (err) => {
+    if (err) throw err
+    console.log('Saved blockchain to disk')
+  })
+}
+
+
 BlockChain.prototype.loadFromJSON = function(_blockchain) {
   this.blocks = []
-
+  
   for (let i = 0; i < _blockchain.blocks.length; i++) {
     let b = new Block()
     b.nonce = _blockchain.blocks[i].nonce
@@ -129,6 +139,36 @@ BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
     console.log("Error: " + err.message)
     _callback('failure')    
   })
+}
+
+BlockChain.prototype.loadFromDisk = function(_callback) {
+  if (fs.existsSync(path.join(__dirname, 'data'))) {
+    fs.readFile(path.join(__dirname, 'data', 'sav.json'), (err, data) => {
+      if (err) {
+        console.log("Error: " + err.message)
+        _callback('failure')
+      } else {
+        let tempBlockchain = new BlockChain(this.cfg)
+        // temp hack until remove config from blockchain loading
+        // TODO remove this
+        let tempJson = {'cfg': this.cfg, 'knownNodes': [], 'blocks':JSON.parse(data)}
+        tempBlockchain.loadFromJSON(tempJson)
+
+        // tempBlockchain.loadFromJSON(JSON.parse(data))
+        if (!tempBlockchain.verify()) {
+          console.log('Loaded invalid blockchain')
+          _callback('failure')
+        } else {
+          this.blocks = tempBlockchain.blocks
+          console.log('Loaded valid blockchain')
+          _callback('success')
+        }
+      }
+    })
+  } else {
+    console.log('Data directory does not exist')    
+    _callback('failure')    
+  }
 }
 
 BlockChain.prototype.sendToRemote = function(_hostname, _port) {
@@ -251,7 +291,12 @@ BlockChain.prototype.beginServer = function()
   this.app.listen(this.cfg.PORT, () => console.log(`Example app listening on port ${this.cfg.PORT}!`))
 }
 
+function mkdir_p(_dir) {
+  if (!fs.existsSync(_dir)) {
+    fs.mkdirSync(_dir)
+  }
+}
 
 module.exports = {
   BlockChain: BlockChain
-};
+}

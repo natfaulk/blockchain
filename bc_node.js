@@ -9,8 +9,10 @@ const BlockChain = require('./bc_lib.js').BlockChain
 const PARENT_NODE_URL = 'http://localhost:3005'
 
 let blockchain = new BlockChain(cfg)
-blockchain.loadFromRemote(PARENT_NODE_URL, (response) => {
+// blockchain.loadFromRemote(PARENT_NODE_URL, (response) => {
+blockchain.loadFromDisk((response) => {
   if (response == 'failure') {
+    console.log('failed.load from disk')
     return
   }
   if (blockchain.transaction('a', 'b', 10)) console.log('Transaction succeeded')
