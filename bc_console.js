@@ -48,7 +48,7 @@ function getCommand()
     else if(com.split(' ')[0] == 'transfer') {
       let src = com.split(' ')[1]
       let dest = com.split(' ')[2]
-      let amt = com.split(' ')[3]
+      let amt = parseFloat(com.split(' ')[3])
       if (blockchain.transaction(src, dest, amt)) {
         console.log('Transaction succeeded!')
         blockchain.sendToRemote(hostname, port)
