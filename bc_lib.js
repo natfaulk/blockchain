@@ -99,17 +99,17 @@ BlockChain.prototype.saveToDisk = function() {
 }
 
 
-BlockChain.prototype.loadFromJSON = function(_blockchain) {
+BlockChain.prototype.loadFromJSON = function(_blocks) {
   this.blocks = []
   
-  for (let i = 0; i < _blockchain.blocks.length; i++) {
+  for (let i = 0; i < _blocks.length; i++) {
     let b = new Block()
-    b.nonce = _blockchain.blocks[i].nonce
-    b.currHash = _blockchain.blocks[i].currHash
-    b.prevHash = _blockchain.blocks[i].prevHash
-    b.minerAddr = _blockchain.blocks[i].minerAddr
+    b.nonce = _blocks[i].nonce
+    b.currHash = _blocks[i].currHash
+    b.prevHash = _blocks[i].prevHash
+    b.minerAddr = _blocks[i].minerAddr
     let d = new BlockData()
-    d.load(_blockchain.blocks[i].data)
+    d.load(_blocks[i].data)
     b.data = d
     this.blocks.push(b)
   }
@@ -149,12 +149,8 @@ BlockChain.prototype.loadFromDisk = function(_callback) {
         _callback('failure')
       } else {
         let tempBlockchain = new BlockChain(this.cfg)
-        // temp hack until remove config from blockchain loading
-        // TODO remove this
-        let tempJson = {'cfg': this.cfg, 'knownNodes': [], 'blocks':JSON.parse(data)}
-        tempBlockchain.loadFromJSON(tempJson)
+        tempBlockchain.loadFromJSON(JSON.parse(data))
 
-        // tempBlockchain.loadFromJSON(JSON.parse(data))
         if (!tempBlockchain.verify()) {
           console.log('Loaded invalid blockchain')
           _callback('failure')
@@ -172,7 +168,7 @@ BlockChain.prototype.loadFromDisk = function(_callback) {
 }
 
 BlockChain.prototype.sendToRemote = function(_hostname, _port) {
-  var body = JSON.stringify(this)
+  var body = JSON.stringify(this.blocks)
     
   var request = new http.ClientRequest({
       hostname: _hostname,
@@ -250,7 +246,7 @@ BlockChain.prototype.beginServer = function()
 
   this.app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
-    res.send(JSON.stringify(this))
+    res.send(JSON.stringify(this.blocks))
   })
 
   this.app.post('/registerNode', (req, res) => {
