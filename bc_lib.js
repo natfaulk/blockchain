@@ -284,6 +284,17 @@ BlockChain.prototype.beginServer = function()
     res.send(JSON.stringify(this.knownNodes))
   })
 
+  this.app.post('/transaction', (req, res) => {
+    if (typeof req.body.srcaddr == 'undefined'
+      || typeof req.body.destaddr == 'undefined'
+      || typeof req.body.amt == 'undefined') {
+      res.send('nack')      
+      return
+    }
+    if (this.transaction(req.body.srcaddr, req.body.destaddr, req.body.amt)) res.send('ack')
+    else res.send('nack')
+  })
+
   this.app.listen(this.cfg.PORT, () => console.log(`Example app listening on port ${this.cfg.PORT}!`))
 }
 
