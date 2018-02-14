@@ -208,6 +208,9 @@ BlockChain.prototype.sendToRemote = function(_hostname, _port) {
         "Content-Length": Buffer.byteLength(body)
       }
   })
+  request.on('error', function(err) {
+    console.log("Error: " + err.message)
+  })
 
   request.end(body)
 }
@@ -223,6 +226,12 @@ BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount) {
   b1._amount = _amount
 
   this.mineBlock(b1)
+
+  for (let i = 0; i < this.knownNodes.length; i++)
+  {
+    this.sendToRemote(this.knownNodes[i], 80)
+  }
+
   return true
 }
 
