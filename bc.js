@@ -3,7 +3,9 @@ const express = require('express')
 const app = express()
 const path = require('path')
 const BlockChain = require('./bc_lib.js').BlockChain
+const version = require('./bc_version.js')
 
+console.log(`Blockchain Version ${version.VERSION}`)
 
 let cfg = require('./bc_cfg.js')
 cfg.loadFromDisk()

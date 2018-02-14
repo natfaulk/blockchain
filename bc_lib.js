@@ -4,6 +4,7 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const http = require('http')
 const fs = require('fs');
+const version = require('./bc_version.js')
 
 let HARD_CODED_NODES = [
   'node1.747474.xyz',
@@ -330,6 +331,10 @@ BlockChain.prototype.beginServer = function()
     }
     if (this.transaction(req.body.srcaddr, req.body.destaddr, req.body.amt)) res.send('ack')
     else res.send('nack')
+  })
+
+  this.app.get('/version', (req, res) => {
+    res.send(version.VERSION)
   })
 
   this.app.listen(this.cfg.PORT, () => console.log(`Example app listening on port ${this.cfg.PORT}!`))
