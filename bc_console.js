@@ -32,7 +32,7 @@ rl.question('Enter remote node hostname: ', (addr) => {
     remoteNodeAddr = addr;
 
     blockchain.print()
-    blockchain.printBalances(['a', 'b', 'c', 'd'])
+    blockchain.printBalances(blockchain.getAllAddresses())
 
     getCommand()
   })
@@ -57,7 +57,7 @@ function getCommand()
       }
     }
     else if(com == 'balances') {
-      blockchain.printBalances(['a', 'b', 'c', 'd'])
+      blockchain.printBalances(blockchain.getAllAddresses())
     }
     else if(com == 'print') {
       blockchain.print()

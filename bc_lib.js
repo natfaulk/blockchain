@@ -281,7 +281,23 @@ BlockChain.prototype.printBalances = function(_addrList) {
   }
   output += '\r\n'
   console.log(output)
-} 
+}
+
+BlockChain.prototype.getAllAddresses = function() {
+  let addrs = []
+
+  for (let i = 0; i < this.blocks.length; i++) {
+    if (!addrs.includes(this.blocks[i].minerAddr)) addrs.push(this.blocks[i].minerAddr)
+    if (!addrs.includes(this.blocks[i].data._srcAddr)) addrs.push(this.blocks[i].data._srcAddr)
+    if (!addrs.includes(this.blocks[i].data._destAddr)) addrs.push(this.blocks[i].data._destAddr)
+  }
+  // remove address 0
+  let tempI = addrs.indexOf('0')
+  if (tempI > -1) {
+    addrs.splice(tempI, 1);
+  }
+  return addrs
+}
 
 BlockChain.prototype.beginServer = function()
 {
