@@ -5,6 +5,12 @@ const bodyParser = require('body-parser')
 const http = require('http')
 const fs = require('fs');
 
+let HARD_CODED_NODES = [
+  'node1.747474.xyz',
+  'node2.747474.xyz',
+  'node3.747474.xyz'
+]
+
 function BlockData() {
   this._srcAddr = ''
   this._destAddr = ''
@@ -41,7 +47,7 @@ function RemoteNode(_port, _addr) {
 function BlockChain(_cfg) {
   this.blocks = []
   this.cfg = _cfg
-  this.knownNodes = []
+  this.knownNodes = HARD_CODED_NODES
 }
 
 BlockChain.prototype.addBlock = function(_data) {
@@ -115,6 +121,25 @@ BlockChain.prototype.loadFromJSON = function(_blocks) {
   }
 }
 
+BlockChain.prototype.loadFromKnownNodes = function(_callback)
+{
+  let i = 0
+  let success = false
+
+  let r = (_callback2) => {
+    console.log(this.knownNodes)
+    this.loadFromRemote(`http://${this.knownNodes[i]}`, (res) => {
+      if (res == 'success') success = true;
+      i++
+      if (i < this.knownNodes.length) {
+        r(_callback2)
+      } else _callback2(success)
+    })
+  }
+
+  r(_callback)
+}
+
 BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
   http.get(_addr, (resp) => {
     let data = ''
@@ -126,7 +151,10 @@ BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
     resp.on('end', () => {
       let tempBlockchain = new BlockChain(this.cfg)
       tempBlockchain.loadFromJSON(JSON.parse(data))
-      if (!tempBlockchain.verify()) {
+      if (tempBlockchain.blocks.length <= this.blocks.length) {
+        console.log('received invalid blockchain')
+        _callback('failure')
+      } else if (!tempBlockchain.verify()) {
         console.log('received invalid blockchain')
         _callback('failure')
       } else {

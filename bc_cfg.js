@@ -8,6 +8,7 @@ module.exports = {
   MINING_REWARD: 0.1,
   THIS_ADDR: '0',
   PORT: 0,
+  IS_PARENT_NODE: false,
   loadFromDisk: function(_filename) {
     if (!_filename) _filename = DEFAULT_CFG_FILENAME
     
@@ -16,6 +17,7 @@ module.exports = {
       let dataJson = JSON.parse(data)
       if (dataJson.THIS_ADDR) this.THIS_ADDR = dataJson.THIS_ADDR
       if (dataJson.PORT) this.PORT = dataJson.PORT
+      if (dataJson.IS_PARENT_NODE) this.IS_PARENT_NODE = dataJson.IS_PARENT_NODE
     } else {
       console.log('Cfg file does not exist')
     }
