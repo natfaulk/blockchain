@@ -151,7 +151,15 @@ BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
     
     resp.on('end', () => {
       let tempBlockchain = new BlockChain(this.cfg)
-      tempBlockchain.loadFromJSON(JSON.parse(data))
+      let tempJson = {}
+      try {
+        tempJson = JSON.parse(data);
+      } catch(e) {
+        console.log('ERROR:' + e.message);
+        _callback('failure')
+        return
+      }
+      tempBlockchain.loadFromJSON(tempJson)
       if (tempBlockchain.blocks.length <= this.blocks.length) {
         console.log('received invalid blockchain')
         _callback('failure')
