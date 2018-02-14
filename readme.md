@@ -4,7 +4,7 @@ Blockchain is the latest buzzword at the moment, so to understand how blockchain
 
 It is mostly functioning except there is no private public key pairs for addresses so anyone can transfer between any addresses. (essentially making it useless as a crypto curreny unless only trusted entities had write access) 
 
-Replication between nodes somewhat works but is still being worked on. Several nodes are hosted on my server.
+Replication between nodes somewhat works but is still being worked on. Several nodes are hosted on my server. `node1.747474.xyz` and `node2.747474.xyz`
 
 There is a console that can be used to interact with the blockchain.
 
@@ -26,7 +26,16 @@ Some settings can be configured by making a file called bc_cfg.json in the main 
 } 
 ```
 
+The current settings are:
+
+DIFFICULTY - how hard the proof of work is  
+MINING_REWARD - how much mining a block rewards  
+THIS_ADDR - the current node address  
+PORT - the port which the local server is hosted on. Not necessarily the port used by other nodes to connect to this node as it could be behing a reverse proxy   
+  
 # System architecture 
 On startup the node tries to connect to known nodes which are stored in a constant at the top of the bc_lib.js file. If it cannot download a valid blockchain from any of those it will create a new one with a couple of example transactions. These can be removed from the bc.js file. 
 
-The genesis block (the first block) transfers 100 credits from address 0 to the first node address. 
+The genesis block (the first block) transfers 100 credits from address 0 to the specified destination address.
+
+When the node starts up, a local server is created. Everytime a trandsaction is made the changes are pushed to all known nodes
