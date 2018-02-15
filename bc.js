@@ -11,15 +11,22 @@ let blockchain = new BlockChain(cfg)
 blockchain.loadFromKnownNodes((res) => {
   if (res) {
     console.log('at least one server ok')
+    bcLoaded()    
   } else {
-    blockchain.mineGenesisBlock(cfg.THIS_ADDR, 100)
+    blockchain.loadFromDisk((res2) => {
+      if (res2 === 'success') {
+        console.log('successfully loaded blockchain from disk')
+      } else {
+        blockchain.mineGenesisBlock(cfg.THIS_ADDR, 100)
+      }
 
-    blockchain.transaction('a', 'b', 50)
-    blockchain.transaction('a', 'c', 25)
-    blockchain.transaction('c', 'd', 5)
+      bcLoaded()
+    })
   }
+})
 
+let bcLoaded = () => {
   blockchain.print()
   blockchain.beginServer()
   if (cfg.ENABLE_AUTO_UPDATE) blockchain.enableAutoUpdate()
-})
+}

@@ -164,6 +164,7 @@ BlockChain.prototype.loadFromRemote = function (_addr, _callback) {
       } else {
         this.blocks = tempBlockchain.blocks
         console.log('Received valid blockchain')
+        this.saveToDisk()        
         _callback('success')
       }
     })
@@ -242,6 +243,8 @@ BlockChain.prototype.transaction = function (_srcAddr, _destAddr, _amount) {
     this.sendToRemote(this.knownNodes[i], 80)
   }
 
+  this.saveToDisk()
+
   return true
 }
 
@@ -273,6 +276,7 @@ BlockChain.prototype.mineGenesisBlock = function (_destAddr, _amount) {
   b._destAddr = _destAddr
   b._amount = 100
   this.addBlock(b)
+  this.saveToDisk()  
 }
 
 BlockChain.prototype.printBalances = function (_addrList) {
@@ -339,6 +343,7 @@ BlockChain.prototype.beginServer = function () {
     res.send('ack')
     console.log('updated with remote blockchain')
     this.print()
+    this.saveToDisk()
   })
 
   this.app.get('/getNodes', (req, res) => {
