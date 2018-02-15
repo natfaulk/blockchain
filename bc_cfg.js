@@ -9,6 +9,8 @@ module.exports = {
   THIS_ADDR: '0',
   PORT: 0,
   IS_PARENT_NODE: false,
+  ENABLE_AUTO_UPDATE: false,
+  UPDATE_INTERVAL_s: (5 * 60),
   loadFromDisk: function (_filename) {
     if (!_filename) _filename = DEFAULT_CFG_FILENAME
 

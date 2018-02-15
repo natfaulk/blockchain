@@ -21,4 +21,5 @@ blockchain.loadFromKnownNodes((res) => {
 
   blockchain.print()
   blockchain.beginServer()
+  if (cfg.ENABLE_AUTO_UPDATE) blockchain.enableAutoUpdate()
 })

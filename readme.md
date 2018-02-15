@@ -31,7 +31,9 @@ The current settings are:
 DIFFICULTY - how hard the proof of work is  
 MINING_REWARD - how much mining a block rewards  
 THIS_ADDR - the current node address  
-PORT - the port which the local server is hosted on. Not necessarily the port used by other nodes to connect to this node as it could be behing a reverse proxy   
+PORT - the port which the local server is hosted on. Not necessarily the port used by other nodes to connect to this node as it could be behing a reverse proxy  
+ENABLE_AUTO_UPDATE - Auto update allows the node to perodically ping known nodes and download their blockchain. Is necessary for nodes that are not accessable from outside their network  
+UPDATE_INTERVAL_s - How often the auto update runs (in seconds)
   
 # System architecture 
 On startup the node tries to connect to known nodes which are stored in a constant at the top of the bc_lib.js file. If it cannot download a valid blockchain from any of those it will create a new one with a couple of example transactions. These can be removed from the bc.js file. 

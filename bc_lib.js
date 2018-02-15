@@ -173,6 +173,13 @@ BlockChain.prototype.loadFromRemote = function (_addr, _callback) {
   })
 }
 
+BlockChain.prototype.enableAutoUpdate = function () {
+  setInterval(() => {
+    console.log('updating from known nodes')
+    this.loadFromKnownNodes((res) => {})
+  }, 1000 * this.cfg.UPDATE_INTERVAL_s)
+}
+
 BlockChain.prototype.loadFromDisk = function (_callback) {
   if (fs.existsSync(path.join(__dirname, 'data'))) {
     fs.readFile(path.join(__dirname, 'data', 'sav.json'), (err, data) => {
