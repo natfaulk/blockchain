@@ -9,9 +9,9 @@ module.exports = {
   THIS_ADDR: '0',
   PORT: 0,
   IS_PARENT_NODE: false,
-  loadFromDisk: function(_filename) {
+  loadFromDisk: function (_filename) {
     if (!_filename) _filename = DEFAULT_CFG_FILENAME
-    
+
     if (fs.existsSync(path.join(__dirname, _filename))) {
       let data = fs.readFileSync(path.join(__dirname, _filename))
       let dataJson = JSON.parse(data)

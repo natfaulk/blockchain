@@ -3,7 +3,7 @@ const express = require('express')
 const path = require('path')
 const bodyParser = require('body-parser')
 const http = require('http')
-const fs = require('fs');
+const fs = require('fs')
 const version = require('./bc_version.js')
 
 let HARD_CODED_NODES = [
@@ -12,19 +12,19 @@ let HARD_CODED_NODES = [
   'node3.747474.xyz'
 ]
 
-function BlockData() {
+function BlockData () {
   this._srcAddr = ''
   this._destAddr = ''
   this._amount = ''
 }
 
-BlockData.prototype.load = function(_data) {
+BlockData.prototype.load = function (_data) {
   this._srcAddr = _data._srcAddr
   this._destAddr = _data._destAddr
   this._amount = _data._amount
 }
 
-function Block() {
+function Block () {
   this.data = {}
   this.prevHash = ''
   this.minerAddr = ''
@@ -32,7 +32,7 @@ function Block() {
   this.currHash = ''
 }
 
-Block.prototype.genCurrHash = function() {
+Block.prototype.genCurrHash = function () {
   let tempD = JSON.stringify(this.data)
   tempD += this.prevHash
   tempD += this.minerAddr
@@ -40,21 +40,20 @@ Block.prototype.genCurrHash = function() {
   this.currHash = crypto.createHash('md5').update(tempD).digest('hex')
 }
 
-function RemoteNode(_port, _addr) {
+function RemoteNode (_port, _addr) {
   this.port = _port
   this.addr = _addr
 }
 
-function BlockChain(_cfg) {
+function BlockChain (_cfg) {
   this.blocks = []
   this.cfg = _cfg
   this.knownNodes = HARD_CODED_NODES
 }
 
-BlockChain.prototype.addBlock = function(_data) {
+BlockChain.prototype.addBlock = function (_data) {
   let b = new Block()
-  if (this.blocks.length > 0)
-    b.prevHash = this.blocks[this.blocks.length - 1].currHash
+  if (this.blocks.length > 0) { b.prevHash = this.blocks[this.blocks.length - 1].currHash }
   b.data = _data
   b.minerAddr = this.cfg.THIS_ADDR
   b.genCurrHash()
@@ -62,29 +61,27 @@ BlockChain.prototype.addBlock = function(_data) {
 }
 
 let checkHashPrefix = (_hash, _nChars, _char) => {
-  let res = true
   for (let i = 0; i < _nChars; i++) {
-    if (_hash[i] != _char) return false
+    if (_hash[i] !== _char) return false
   }
   return true
 }
 
-BlockChain.prototype.mineBlock = function(_data) {
+BlockChain.prototype.mineBlock = function (_data) {
   let b = new Block()
-  if (this.blocks.length > 0)
-    b.prevHash = this.blocks[this.blocks.length - 1].currHash
+  if (this.blocks.length > 0) { b.prevHash = this.blocks[this.blocks.length - 1].currHash }
   b.data = _data
   b.minerAddr = this.cfg.THIS_ADDR
 
-  b.genCurrHash()  
+  b.genCurrHash()
   while (!checkHashPrefix(b.currHash, this.cfg.DIFFICULTY, '0')) {
     b.nonce++
     b.genCurrHash()
-  } 
+  }
   this.blocks.push(b)
 }
 
-BlockChain.prototype.print = function(_data) {
+BlockChain.prototype.print = function (_data) {
   let outStr = ''
   for (let i = 0; i < this.blocks.length; i++) {
     outStr += `Block ${i}:\r\n`
@@ -97,18 +94,17 @@ BlockChain.prototype.print = function(_data) {
   console.log(outStr)
 }
 
-BlockChain.prototype.saveToDisk = function() {
-  mkdir_p(path.join(__dirname, 'data'))
+BlockChain.prototype.saveToDisk = function () {
+  mkdirP(path.join(__dirname, 'data'))
   fs.writeFile(path.join(__dirname, 'data', 'sav.json'), JSON.stringify(this.blocks), 'utf8', (err) => {
     if (err) throw err
     console.log('Saved blockchain to disk')
   })
 }
 
-
-BlockChain.prototype.loadFromJSON = function(_blocks) {
+BlockChain.prototype.loadFromJSON = function (_blocks) {
   this.blocks = []
-  
+
   for (let i = 0; i < _blocks.length; i++) {
     let b = new Block()
     b.nonce = _blocks[i].nonce
@@ -122,15 +118,14 @@ BlockChain.prototype.loadFromJSON = function(_blocks) {
   }
 }
 
-BlockChain.prototype.loadFromKnownNodes = function(_callback)
-{
+BlockChain.prototype.loadFromKnownNodes = function (_callback) {
   let i = 0
   let success = false
 
   let r = (_callback2) => {
     console.log(this.knownNodes)
     this.loadFromRemote(`http://${this.knownNodes[i]}`, (res) => {
-      if (res == 'success') success = true;
+      if (res === 'success') success = true
       i++
       if (i < this.knownNodes.length) {
         r(_callback2)
@@ -141,21 +136,21 @@ BlockChain.prototype.loadFromKnownNodes = function(_callback)
   r(_callback)
 }
 
-BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
+BlockChain.prototype.loadFromRemote = function (_addr, _callback) {
   http.get(_addr, (resp) => {
     let data = ''
-    
+
     resp.on('data', (chunk) => {
       data += chunk
     })
-    
+
     resp.on('end', () => {
       let tempBlockchain = new BlockChain(this.cfg)
       let tempJson = {}
       try {
-        tempJson = JSON.parse(data);
-      } catch(e) {
-        console.log('ERROR:' + e.message);
+        tempJson = JSON.parse(data)
+      } catch (e) {
+        console.log('ERROR:' + e.message)
         _callback('failure')
         return
       }
@@ -172,17 +167,17 @@ BlockChain.prototype.loadFromRemote = function(_addr, _callback) {
         _callback('success')
       }
     })
-  }).on("error", (err) => {
-    console.log("Error: " + err.message)
-    _callback('failure')    
+  }).on('error', (err) => {
+    console.log('Error: ' + err.message)
+    _callback('failure')
   })
 }
 
-BlockChain.prototype.loadFromDisk = function(_callback) {
+BlockChain.prototype.loadFromDisk = function (_callback) {
   if (fs.existsSync(path.join(__dirname, 'data'))) {
     fs.readFile(path.join(__dirname, 'data', 'sav.json'), (err, data) => {
       if (err) {
-        console.log("Error: " + err.message)
+        console.log('Error: ' + err.message)
         _callback('failure')
       } else {
         let tempBlockchain = new BlockChain(this.cfg)
@@ -199,34 +194,34 @@ BlockChain.prototype.loadFromDisk = function(_callback) {
       }
     })
   } else {
-    console.log('Data directory does not exist')    
-    _callback('failure')    
+    console.log('Data directory does not exist')
+    _callback('failure')
   }
 }
 
-BlockChain.prototype.sendToRemote = function(_hostname, _port) {
+BlockChain.prototype.sendToRemote = function (_hostname, _port) {
   var body = JSON.stringify(this.blocks)
-    
+
   var request = new http.ClientRequest({
-      hostname: _hostname,
-      port: _port,
-      path: "/syncBlockChain",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(body)
-      }
+    hostname: _hostname,
+    port: _port,
+    path: '/syncBlockChain',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(body)
+    }
   })
-  request.on('error', function(err) {
-    console.log("Error: " + err.message)
+  request.on('error', function (err) {
+    console.log('Error: ' + err.message)
   })
 
   request.end(body)
 }
 
-BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount) {
-  if (this.blocks.length == 0) return false
-  
+BlockChain.prototype.transaction = function (_srcAddr, _destAddr, _amount) {
+  if (this.blocks.length === 0) return false
+
   if (this.getBalance(_srcAddr) < _amount) return false
 
   let b1 = new BlockData()
@@ -236,37 +231,36 @@ BlockChain.prototype.transaction = function(_srcAddr, _destAddr, _amount) {
 
   this.mineBlock(b1)
 
-  for (let i = 0; i < this.knownNodes.length; i++)
-  {
+  for (let i = 0; i < this.knownNodes.length; i++) {
     this.sendToRemote(this.knownNodes[i], 80)
   }
 
   return true
 }
 
-BlockChain.prototype.getBalance = function(_addr) {
+BlockChain.prototype.getBalance = function (_addr) {
   let balance = 0
   for (let i = 0; i < this.blocks.length; i++) {
-    if (this.blocks[i].minerAddr == _addr) balance += this.cfg.MINING_REWARD
-    if (this.blocks[i].data._srcAddr == _addr) balance -= this.blocks[i].data._amount
-    if (this.blocks[i].data._destAddr == _addr) balance += this.blocks[i].data._amount
+    if (this.blocks[i].minerAddr === _addr) balance += this.cfg.MINING_REWARD
+    if (this.blocks[i].data._srcAddr === _addr) balance -= this.blocks[i].data._amount
+    if (this.blocks[i].data._destAddr === _addr) balance += this.blocks[i].data._amount
   }
   return balance
 }
 
-BlockChain.prototype.verify = function() {
+BlockChain.prototype.verify = function () {
   for (let i = 0; i < this.blocks.length; i++) {
     let oldHash = this.blocks[i].currHash
     this.blocks[i].genCurrHash()
-    if (this.blocks[i].currHash != oldHash) return false
-    if ((i > 0) && (this.blocks[i].prevHash != this.blocks[i - 1].currHash)) return false
+    if (this.blocks[i].currHash !== oldHash) return false
+    if ((i > 0) && (this.blocks[i].prevHash !== this.blocks[i - 1].currHash)) return false
     if ((i > 0) && (!checkHashPrefix(this.blocks[i].currHash, this.cfg.DIFFICULTY, '0'))) return false
   }
   return true
 }
 
-BlockChain.prototype.mineGenesisBlock = function(_destAddr, _amount) {
-  if (this.blocks.length != 0) return
+BlockChain.prototype.mineGenesisBlock = function (_destAddr, _amount) {
+  if (this.blocks.length !== 0) return
   let b = new BlockData()
   b._srcAddr = '0'
   b._destAddr = _destAddr
@@ -274,7 +268,7 @@ BlockChain.prototype.mineGenesisBlock = function(_destAddr, _amount) {
   this.addBlock(b)
 }
 
-BlockChain.prototype.printBalances = function(_addrList) {
+BlockChain.prototype.printBalances = function (_addrList) {
   let output = 'Balances:\r\n'
   for (let i = 0; i < _addrList.length; i++) {
     output += `${_addrList[i]}: ${this.getBalance(_addrList[i])}\r\n`
@@ -283,7 +277,7 @@ BlockChain.prototype.printBalances = function(_addrList) {
   console.log(output)
 }
 
-BlockChain.prototype.getAllAddresses = function() {
+BlockChain.prototype.getAllAddresses = function () {
   let addrs = []
 
   for (let i = 0; i < this.blocks.length; i++) {
@@ -294,17 +288,16 @@ BlockChain.prototype.getAllAddresses = function() {
   // remove address 0
   let tempI = addrs.indexOf('0')
   if (tempI > -1) {
-    addrs.splice(tempI, 1);
+    addrs.splice(tempI, 1)
   }
   return addrs
 }
 
-BlockChain.prototype.beginServer = function()
-{
-  if (this.cfg.PORT == 0) return;
+BlockChain.prototype.beginServer = function () {
+  if (this.cfg.PORT === 0) return
 
   this.app = express()
-  this.app.use(bodyParser.json());
+  this.app.use(bodyParser.json())
 
   this.app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
@@ -312,8 +305,8 @@ BlockChain.prototype.beginServer = function()
   })
 
   this.app.post('/registerNode', (req, res) => {
-    if (typeof req.body.addr == 'undefined' || typeof req.body.port == 'undefined') {
-      res.send('nack')      
+    if (typeof req.body.addr === 'undefined' || typeof req.body.port === 'undefined') {
+      res.send('nack')
       return
     }
     let r = new RemoteNode(req.body.addr, req.body.port)
@@ -347,10 +340,10 @@ BlockChain.prototype.beginServer = function()
   })
 
   this.app.post('/transaction', (req, res) => {
-    if (typeof req.body.srcaddr == 'undefined'
-      || typeof req.body.destaddr == 'undefined'
-      || typeof req.body.amt == 'undefined') {
-      res.send('nack')      
+    if (typeof req.body.srcaddr === 'undefined' ||
+      typeof req.body.destaddr === 'undefined' ||
+      typeof req.body.amt === 'undefined') {
+      res.send('nack')
       return
     }
     if (this.transaction(req.body.srcaddr, req.body.destaddr, req.body.amt)) res.send('ack')
@@ -364,7 +357,7 @@ BlockChain.prototype.beginServer = function()
   this.app.listen(this.cfg.PORT, () => console.log(`Example app listening on port ${this.cfg.PORT}!`))
 }
 
-function mkdir_p(_dir) {
+function mkdirP (_dir) {
   if (!fs.existsSync(_dir)) {
     fs.mkdirSync(_dir)
   }

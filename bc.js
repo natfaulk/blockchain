@@ -1,7 +1,3 @@
-const crypto = require('crypto')
-const express = require('express')
-const app = express()
-const path = require('path')
 const BlockChain = require('./bc_lib.js').BlockChain
 const version = require('./bc_version.js')
 

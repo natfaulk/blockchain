@@ -1,6 +1,5 @@
 const readline = require('readline')
 const BlockChain = require('./bc_lib.js').BlockChain
-const http = require('http')
 
 let cfg = require('./bc_cfg.js')
 cfg.THIS_ADDR = 'b'
@@ -8,13 +7,12 @@ cfg.THIS_ADDR = 'b'
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
-});
+})
 
 let blockchain = new BlockChain(cfg)
-let remoteNodeAddr = '';
 
-let hostname = '';
-let port = 80;
+let hostname = ''
+let port = 80
 
 console.log('BC Console. Version 0')
 
@@ -24,12 +22,10 @@ rl.question('Enter remote node hostname: ', (addr) => {
   console.log(`Port: ${port}`)
 
   blockchain.loadFromRemote(`http://${hostname}:${port}`, (response) => {
-    if (response == 'failure') {
+    if (response === 'failure') {
       rl.close()
       return
     }
-
-    remoteNodeAddr = addr;
 
     blockchain.print()
     blockchain.printBalances(blockchain.getAllAddresses())
@@ -38,14 +34,12 @@ rl.question('Enter remote node hostname: ', (addr) => {
   })
 })
 
-function getCommand()
-{
+function getCommand () {
   rl.question('Enter command: ', (com) => {
-    if (com == 'exit') {
+    if (com === 'exit') {
       rl.close()
       return
-    }
-    else if(com.split(' ')[0] == 'transfer') {
+    } else if (com.split(' ')[0] === 'transfer') {
       let src = com.split(' ')[1]
       let dest = com.split(' ')[2]
       let amt = parseFloat(com.split(' ')[3])
@@ -55,26 +49,20 @@ function getCommand()
       } else {
         console.log('Transaction failed!')
       }
-    }
-    else if(com == 'balances') {
+    } else if (com === 'balances') {
       blockchain.printBalances(blockchain.getAllAddresses())
-    }
-    else if(com == 'print') {
+    } else if (com === 'print') {
       blockchain.print()
-    }
-    else if(com == 'help') {
+    } else if (com === 'help') {
       printHelp()
-    }
-    else if(com == 'loadremote') {
+    } else if (com === 'loadremote') {
       blockchain.loadFromRemote(`http://${hostname}:${port}`, (response) => {
         getCommand()
       })
       return
-    }
-    else if(com == 'saveremote') {
+    } else if (com === 'saveremote') {
       blockchain.sendToRemote(hostname, port)
-    }
-    else if(com.split(' ')[0] == 'remoteaddr') {
+    } else if (com.split(' ')[0] === 'remoteaddr') {
       if (com.split(' ').length > 1) {
         decodeAddr(com.split(' ')[1])
       } else {
@@ -84,7 +72,7 @@ function getCommand()
       console.log('Invalid command. Type help for help text')
     }
     getCommand()
-  })  
+  })
 }
 
 let printHelp = () => {
