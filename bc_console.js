@@ -16,7 +16,7 @@ let port = 80
 
 console.log('BC Console. Version 0')
 
-rl.question('Enter remote node hostname: ', (addr) => {
+rl.question('Enter remote node hostname (eg node1.747474.xyz): ', (addr) => {
   decodeAddr(addr)
   console.log(`Hostname: ${hostname}`)
   console.log(`Port: ${port}`)
@@ -84,8 +84,8 @@ let printHelp = () => {
   s += 'transfer src dest amt\r\n'
   s += 'balances - prints address balances\r\n'
   s += 'print - prints whole blockchain\r\n'
-  s += 'loadremote\r\n'
-  s += 'saveremote\r\n'
+  s += 'loadremote - load blockchain from remote addr\r\n'
+  s += 'saveremote - save blockchain to remote addr\r\n'
   s += 'remoteaddr addr - set remote address'
   s += 'help - displays this help text\r\n'
 
