@@ -6,12 +6,6 @@ const http = require('http')
 const fs = require('fs')
 const version = require('./bc_version.js')
 
-let HARD_CODED_NODES = [
-  'node1.747474.xyz',
-  'node2.747474.xyz',
-  'node3.747474.xyz'
-]
-
 function BlockData () {
   this._srcAddr = ''
   this._destAddr = ''
@@ -48,7 +42,7 @@ function RemoteNode (_port, _addr) {
 function BlockChain (_cfg) {
   this.blocks = []
   this.cfg = _cfg
-  this.knownNodes = HARD_CODED_NODES
+  this.knownNodes = _cfg.HARD_CODED_NODES
 }
 
 BlockChain.prototype.addBlock = function (_data) {
@@ -164,7 +158,7 @@ BlockChain.prototype.loadFromRemote = function (_addr, _callback) {
       } else {
         this.blocks = tempBlockchain.blocks
         console.log('Received valid blockchain')
-        this.saveToDisk()        
+        this.saveToDisk()
         _callback('success')
       }
     })
@@ -276,7 +270,7 @@ BlockChain.prototype.mineGenesisBlock = function (_destAddr, _amount) {
   b._destAddr = _destAddr
   b._amount = 100
   this.addBlock(b)
-  this.saveToDisk()  
+  this.saveToDisk()
 }
 
 BlockChain.prototype.printBalances = function (_addrList) {

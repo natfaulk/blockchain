@@ -4,6 +4,11 @@ const path = require('path')
 const DEFAULT_CFG_FILENAME = 'bc_cfg.json'
 
 module.exports = {
+  HARD_CODED_NODES: [
+    'node1.747474.xyz',
+    'node2.747474.xyz',
+    'node3.747474.xyz'
+  ],
   DIFFICULTY: 5,
   MINING_REWARD: 0.1,
   THIS_ADDR: '0',
@@ -20,6 +25,9 @@ module.exports = {
       if (dataJson.THIS_ADDR) this.THIS_ADDR = dataJson.THIS_ADDR
       if (dataJson.PORT) this.PORT = dataJson.PORT
       if (dataJson.IS_PARENT_NODE) this.IS_PARENT_NODE = dataJson.IS_PARENT_NODE
+      if (dataJson.ENABLE_AUTO_UPDATE) this.ENABLE_AUTO_UPDATE = dataJson.ENABLE_AUTO_UPDATE
+      if (dataJson.UPDATE_INTERVAL_s) this.UPDATE_INTERVAL_s = dataJson.UPDATE_INTERVAL_s
+      if (dataJson.HARD_CODED_NODES) this.HARD_CODED_NODES = dataJson.HARD_CODED_NODES
     } else {
       console.log('Cfg file does not exist')
     }

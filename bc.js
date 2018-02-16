@@ -11,7 +11,7 @@ let blockchain = new BlockChain(cfg)
 blockchain.loadFromKnownNodes((res) => {
   if (res) {
     console.log('at least one server ok')
-    bcLoaded()    
+    bcLoaded()
   } else {
     blockchain.loadFromDisk((res2) => {
       if (res2 === 'success') {
